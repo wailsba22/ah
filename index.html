@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypixel SkyBlock Auctions Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Hypixel SkyBlock Auctions Viewer</h1>
+    <div class="input-section">
+        <label for="apiKey">API Key:</label>
+        <input type="text" id="apiKey" placeholder="Enter your Hypixel API key">
+        <br>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter your Minecraft username">
+        <br>
+        <button id="fetchBtn">Fetch Auctions</button>
+    </div>
+    <div id="loading" style="display: none;">Loading...</div>
+    <div id="error" style="display: none; color: red;"></div>
+    <div class="auctions-section">
+        <h2>Active Auctions</h2>
+        <div id="activeAuctions" class="auctions-container"></div>
+        <h2>Sold Auctions</h2>
+        <div id="soldAuctions" class="auctions-container"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
