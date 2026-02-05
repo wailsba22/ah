@@ -205,10 +205,6 @@ function displayAuctions(auctions, container, type, buyerNames = {}) {
             buyerInfo = `<p class="buyer" onclick="searchBuyer('${buyerName}')">Buyer: ${buyerName}</p>`;
         }
 
-        itemDiv.innerHTML = `
-            <h3>${itemName} ${binBadge}</h3>
-            <p class="tier ${tierClass}">Rarity: ${tier}</p>
-            <p class="category">Category: ${category}</p>
         let priceInfo = '';
         if (type === 'active') {
             if (isBin) {
@@ -220,6 +216,12 @@ function displayAuctions(auctions, container, type, buyerNames = {}) {
         } else {
             priceInfo = `<p class="price">Sold Price: ${formatCoins(highestBid)} coins</p>`;
         }
+
+        itemDiv.innerHTML = `
+            <h3>${itemName} ${binBadge}</h3>
+            <p class="tier ${tierClass}">Rarity: ${tier}</p>
+            <p class="category">Category: ${category}</p>
+            ${priceInfo}
             ${buyerInfo}
             <p class="time">Date: ${endTime}</p>
         `;
