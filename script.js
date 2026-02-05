@@ -2,31 +2,26 @@ document.addEventListener('DOMContentLoaded', loadStoredData);
 document.getElementById('fetchBtn').addEventListener('click', fetchAuctions);
 
 function loadStoredData() {
-    const apiKey = localStorage.getItem('hypixelApiKey');
     const username = localStorage.getItem('hypixelUsername');
-    if (apiKey) {
-        document.getElementById('apiKey').value = apiKey;
-    }
     if (username) {
         document.getElementById('username').value = username;
     }
 }
 
 async function fetchAuctions() {
-    const apiKey = document.getElementById('apiKey').value.trim();
+    const apiKey = '7898a675-6bb0-4ea4-828f-6c6d076cc692';
     const username = document.getElementById('username').value.trim();
     const loading = document.getElementById('loading');
     const errorDiv = document.getElementById('error');
     const activeDiv = document.getElementById('activeAuctions');
     const soldDiv = document.getElementById('soldAuctions');
 
-    if (!apiKey || !username) {
-        showError('Please enter both API key and username.');
+    if (!username) {
+        showError('Please enter your username.');
         return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('hypixelApiKey', apiKey);
+    // Save username to localStorage
     localStorage.setItem('hypixelUsername', username);
 
     loading.style.display = 'block';
