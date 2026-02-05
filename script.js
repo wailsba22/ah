@@ -3,8 +3,12 @@ document.getElementById('fetchBtn').addEventListener('click', fetchAuctions);
 
 function loadStoredData() {
     const username = localStorage.getItem('hypixelUsername');
+    const originalUsername = localStorage.getItem('originalUsername') || username;
     if (username) {
         document.getElementById('username').value = username;
+    }
+    if (originalUsername) {
+        localStorage.setItem('originalUsername', originalUsername);
     }
 }
 
@@ -23,6 +27,13 @@ async function fetchAuctions() {
 
     // Save username to localStorage
     localStorage.setItem('hypixelUsername', username);
+
+    // Check if viewing own or other's
+    const originalUsername = localStorage.getItem('originalUsername');
+    const isViewingOwn = !originalUsername || username === originalUsername;
+    if (!originalUsername) {
+        localStorage.setItem('originalUsername', username);
+    }
 
     loading.style.display = 'block';
     errorDiv.style.display = 'none';
@@ -79,6 +90,9 @@ async function fetchAuctions() {
             }
         });
 
+        // Sort active by end time ascending (ending soonest first)
+        active.sort((a, b) => a.end - b.end);
+
         // Sort sold by end time ascending (oldest first)
         sold.sort((a, b) => a.end - b.end);
 
@@ -116,6 +130,14 @@ async function fetchAuctions() {
             }
         }
 
+        // Update stats
+        document.getElementById('stats').style.display = 'block';
+        document.getElementById('activeCount').textContent = `Active: ${activeCount}`;
+        document.getElementById('soldCount').textContent = `Sold: ${soldCount}`;
+        document.getElementById('totalSoldValue').textContent = `Total Sold: ${formatCoins(totalSoldValue)} coins`;
+        document.getElementById('viewing').textContent = `Viewing: ${isViewingOwn ? 'Your Auctions' : username + "'s Auctions"}`;
+        document.getElementById('backBtn').style.display = isViewingOwn ? 'none' : 'block';
+
         // Pass buyerNames to display
         displayAuctions(active, activeDiv, 'active', {});
         displayAuctions(sold, soldDiv, 'sold', buyerNames);
@@ -135,11 +157,16 @@ async function fetchAuctions() {
 
 function displayCachedData(data) {
     const { active, sold, activeCount, soldCount, totalSoldValue } = data;
+    const username = document.getElementById('username').value.trim();
+    const originalUsername = localStorage.getItem('originalUsername');
+    const isViewingOwn = !originalUsername || username === originalUsername;
 
     document.getElementById('stats').style.display = 'block';
     document.getElementById('activeCount').textContent = `Active: ${activeCount}`;
     document.getElementById('soldCount').textContent = `Sold: ${soldCount}`;
     document.getElementById('totalSoldValue').textContent = `Total Sold: ${formatCoins(totalSoldValue)} coins`;
+    document.getElementById('viewing').textContent = `Viewing: ${isViewingOwn ? 'Your Auctions' : username + "'s Auctions"}`;
+    document.getElementById('backBtn').style.display = isViewingOwn ? 'none' : 'block';
 
     displayAuctions(active, document.getElementById('activeAuctions'), 'active');
     displayAuctions(sold, document.getElementById('soldAuctions'), 'sold');
@@ -182,7 +209,17 @@ function displayAuctions(auctions, container, type, buyerNames = {}) {
             <h3>${itemName} ${binBadge}</h3>
             <p class="tier ${tierClass}">Rarity: ${tier}</p>
             <p class="category">Category: ${category}</p>
-            ${type === 'active' ? `<p class="price">Starting Bid: ${formatCoins(startingBid)} coins</p>` : `<p class="price">Sold Price: ${formatCoins(highestBid)} coins</p>`}
+        let priceInfo = '';
+        if (type === 'active') {
+            if (isBin) {
+                priceInfo = `<p class="price">BIN Price: ${formatCoins(startingBid)} coins</p>`;
+            } else {
+                priceInfo = `<p class="price">Starting Bid: ${formatCoins(startingBid)} coins</p>
+                             <p class="price">Current Bid: ${formatCoins(highestBid)} coins</p>`;
+            }
+        } else {
+            priceInfo = `<p class="price">Sold Price: ${formatCoins(highestBid)} coins</p>`;
+        }
             ${buyerInfo}
             <p class="time">Date: ${endTime}</p>
         `;
@@ -195,7 +232,10 @@ function formatCoins(amount) {
     return amount.toLocaleString();
 }
 
-function searchBuyer(buyerName) {
-    document.getElementById('username').value = buyerName;
-    fetchAuctions();
+function goBack() {
+    const originalUsername = localStorage.getItem('originalUsername');
+    if (originalUsername) {
+        document.getElementById('username').value = originalUsername;
+        fetchAuctions();
+    }
 }
