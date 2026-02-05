@@ -125,7 +125,7 @@ button:hover {
     font-weight: bold;
 }
 
-.tier-common { color: #cccccc; }
+.tier-common { color: #ffffff; }
 .tier-uncommon { color: #55ff55; }
 .tier-rare { color: #5555ff; }
 .tier-epic { color: #aa00aa; }

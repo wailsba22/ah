@@ -188,7 +188,6 @@ function displayAuctions(auctions, container, type, buyerNames = {}) {
         const startingBid = auction.starting_bid || 0;
         const highestBid = auction.highest_bid_amount || 0;
         const endTime = new Date(auction.end).toLocaleString();
-        const category = auction.category || 'UNKNOWN';
         const isBin = auction.bin;
 
         let binBadge = '';
@@ -219,8 +218,7 @@ function displayAuctions(auctions, container, type, buyerNames = {}) {
 
         itemDiv.innerHTML = `
             <h3>${itemName} ${binBadge}</h3>
-            <p class="tier ${tierClass}">Rarity: ${tier}</p>
-            <p class="category">Category: ${category}</p>
+            <p class="tier ${tierClass}">${tier}</p>
             ${priceInfo}
             ${buyerInfo}
             <p class="time">Date: ${endTime}</p>
