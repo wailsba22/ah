@@ -125,14 +125,14 @@ button:hover {
     font-weight: bold;
 }
 
-.tier-common { color: #ffffff; }
-.tier-uncommon { color: #55ff55; }
-.tier-rare { color: #5555ff; }
-.tier-epic { color: #aa00aa; }
-.tier-legendary { color: #ffaa00; }
-.tier-mythic { color: #ff5555; }
-.tier-special { color: #ff55ff; }
-.tier-unknown { color: #ff0000; }
+.tier-common { color: #ffffff !important; }
+.tier-uncommon { color: #55ff55 !important; }
+.tier-rare { color: #5555ff !important; }
+.tier-epic { color: #aa00aa !important; }
+.tier-legendary { color: #ffaa00 !important; }
+.tier-mythic { color: #ff5555 !important; }
+.tier-special { color: #ff55ff !important; }
+.tier-unknown { color: #ff0000 !important; }
 
 .auction-item .price {
     font-weight: bold;
