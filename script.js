@@ -29,18 +29,31 @@ async function fetchAuctions() {
     activeDiv.innerHTML = '';
     soldDiv.innerHTML = '';
 
+    let cachedData = null;
     try {
-        // Get UUID from username
-        const playerResponse = await fetch(`https://api.hypixel.net/player?key=${apiKey}&name=${username}`);
-        const playerData = await playerResponse.json();
+        cachedData = JSON.parse(localStorage.getItem(`auctions_${username}`) || 'null');
+    } catch (e) {
+        // Ignore
+    }
 
-        if (!playerData.success) {
-            throw new Error(playerData.cause || 'Failed to get player data');
+    try {
+        // Check cache for UUID
+        let uuid = localStorage.getItem(`uuid_${username}`);
+        if (!uuid) {
+            // Get UUID from username
+            const playerResponse = await fetch(`https://api.hypixel.net/player?key=${apiKey}&name=${username}`);
+            const playerData = await playerResponse.json();
+
+            if (!playerData.success) {
+                throw new Error(playerData.cause || 'Failed to get player data');
+            }
+
+            uuid = playerData.player.uuid;
+            // Cache UUID permanently
+            localStorage.setItem(`uuid_${username}`, uuid);
         }
 
-        const uuid = playerData.player.uuid;
-
-        // Get auctions
+        // Always get fresh auctions
         const auctionsResponse = await fetch(`https://api.hypixel.net/skyblock/auction?key=${apiKey}&player=${uuid}`);
         const auctionsData = await auctionsResponse.json();
 
@@ -66,17 +79,73 @@ async function fetchAuctions() {
             }
         });
 
-        displayAuctions(active, activeDiv, 'active');
-        displayAuctions(sold, soldDiv, 'sold');
+        // Sort sold by end time ascending (oldest first)
+        sold.sort((a, b) => a.end - b.end);
+
+        // Calculate stats
+        const activeCount = active.length;
+        const soldCount = sold.length;
+        const totalSoldValue = sold.reduce((sum, auction) => sum + (auction.highest_bid_amount || 0), 0);
+
+        const data = { active, sold, activeCount, soldCount, totalSoldValue };
+
+        // Save to localStorage
+        localStorage.setItem(`auctions_${username}`, JSON.stringify(data));
+
+        // Get buyer names
+        const buyerUUIDs = [...new Set(sold.map(a => a.bids && a.bids.length > 0 ? a.bids.reduce((prev, current) => (prev.amount > current.amount) ? prev : current).bidder : null).filter(Boolean))];
+        const buyerNames = {};
+        for (const uuid of buyerUUIDs) {
+            const cachedName = localStorage.getItem(`name_${uuid}`);
+            if (cachedName) {
+                buyerNames[uuid] = cachedName;
+            } else {
+                try {
+                    const nameResponse = await fetch(`https://api.hypixel.net/player?key=${apiKey}&uuid=${uuid}`);
+                    const nameData = await nameResponse.json();
+                    if (nameData.success) {
+                        const name = nameData.player.displayname;
+                        buyerNames[uuid] = name;
+                        localStorage.setItem(`name_${uuid}`, name);
+                    } else {
+                        buyerNames[uuid] = uuid; // Fallback
+                    }
+                } catch (e) {
+                    buyerNames[uuid] = uuid; // Fallback
+                }
+            }
+        }
+
+        // Pass buyerNames to display
+        displayAuctions(active, activeDiv, 'active', {});
+        displayAuctions(sold, soldDiv, 'sold', buyerNames);
 
     } catch (error) {
-        showError(error.message);
+        // If fetch fails and we have cached data, show it
+        if (cachedData) {
+            showError(`Failed to fetch fresh data: ${error.message}. Showing cached data.`);
+            displayCachedData(cachedData);
+        } else {
+            showError(error.message);
+        }
     } finally {
         loading.style.display = 'none';
     }
 }
 
-function displayAuctions(auctions, container, type) {
+function displayCachedData(data) {
+    const { active, sold, activeCount, soldCount, totalSoldValue } = data;
+
+    document.getElementById('stats').style.display = 'block';
+    document.getElementById('activeCount').textContent = `Active: ${activeCount}`;
+    document.getElementById('soldCount').textContent = `Sold: ${soldCount}`;
+    document.getElementById('totalSoldValue').textContent = `Total Sold: ${formatCoins(totalSoldValue)} coins`;
+
+    displayAuctions(active, document.getElementById('activeAuctions'), 'active');
+    displayAuctions(sold, document.getElementById('soldAuctions'), 'sold');
+}
+
+function displayAuctions(auctions, container, type, buyerNames = {}) {
     if (auctions.length === 0) {
         container.innerHTML = `<p style="text-align: center; color: white; font-size: 18px;">No ${type} auctions found.</p>`;
         return;
@@ -88,6 +157,7 @@ function displayAuctions(auctions, container, type) {
 
         const itemName = auction.item_name || 'Unknown Item';
         const tier = auction.tier || 'UNKNOWN';
+        const tierClass = `tier-${tier.toLowerCase()}`;
         const startingBid = auction.starting_bid || 0;
         const highestBid = auction.highest_bid_amount || 0;
         const endTime = new Date(auction.end).toLocaleString();
@@ -99,13 +169,22 @@ function displayAuctions(auctions, container, type) {
             binBadge = '<span class="bin-badge">BIN</span>';
         }
 
+        let buyerInfo = '';
+        if (type === 'sold' && auction.bids && auction.bids.length > 0) {
+            // Find the highest bidder
+            const highestBidObj = auction.bids.reduce((prev, current) => (prev.amount > current.amount) ? prev : current);
+            const buyerUUID = highestBidObj.bidder;
+            const buyerName = buyerNames[buyerUUID] || buyerUUID;
+            buyerInfo = `<p class="buyer" onclick="searchBuyer('${buyerName}')">Buyer: ${buyerName}</p>`;
+        }
+
         itemDiv.innerHTML = `
             <h3>${itemName} ${binBadge}</h3>
-            <p class="tier">Tier: ${tier}</p>
+            <p class="tier ${tierClass}">Rarity: ${tier}</p>
             <p class="category">Category: ${category}</p>
-            <p class="price">Starting Bid: ${formatCoins(startingBid)} coins</p>
-            <p class="price">Highest Bid: ${formatCoins(highestBid)} coins</p>
-            <p class="time">Ends: ${endTime}</p>
+            ${type === 'active' ? `<p class="price">Starting Bid: ${formatCoins(startingBid)} coins</p>` : `<p class="price">Sold Price: ${formatCoins(highestBid)} coins</p>`}
+            ${buyerInfo}
+            <p class="time">Date: ${endTime}</p>
         `;
 
         container.appendChild(itemDiv);
@@ -116,8 +195,7 @@ function formatCoins(amount) {
     return amount.toLocaleString();
 }
 
-function showError(message) {
-    const errorDiv = document.getElementById('error');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
+function searchBuyer(buyerName) {
+    document.getElementById('username').value = buyerName;
+    fetchAuctions();
 }

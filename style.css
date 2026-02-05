@@ -3,23 +3,23 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
     min-height: 100vh;
-    color: #333;
+    color: #e0e0e0;
 }
 
 h1 {
     text-align: center;
-    color: white;
+    color: #ffffff;
     margin-bottom: 30px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .input-section {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(50, 50, 50, 0.9);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 30px;
     display: flex;
     flex-wrap: wrap;
@@ -30,15 +30,17 @@ h1 {
 
 .input-section label {
     font-weight: bold;
-    color: #555;
+    color: #cccccc;
 }
 
 input {
     padding: 10px;
-    border: 2px solid #ddd;
+    border: 2px solid #555;
     border-radius: 5px;
     width: 250px;
     font-size: 16px;
+    background-color: #333;
+    color: #e0e0e0;
     transition: border-color 0.3s;
 }
 
@@ -49,7 +51,7 @@ input:focus {
 
 button {
     padding: 12px 25px;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
+    background: linear-gradient(45deg, #667eea, #764ba2);
     color: white;
     border: none;
     border-radius: 5px;
@@ -61,12 +63,12 @@ button {
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 #loading {
     text-align: center;
-    color: white;
+    color: #ffffff;
     font-size: 18px;
     margin: 20px 0;
 }
@@ -81,10 +83,10 @@ button:hover {
 }
 
 .auctions-section h2 {
-    color: white;
+    color: #ffffff;
     text-align: center;
     margin: 40px 0 20px 0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 .auctions-container {
@@ -95,34 +97,42 @@ button:hover {
 }
 
 .auction-item {
-    background: white;
+    background: #333;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #555;
 }
 
 .auction-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
 }
 
 .auction-item h3 {
     margin-top: 0;
-    color: #333;
+    color: #ffffff;
     font-size: 18px;
 }
 
 .auction-item p {
     margin: 8px 0;
-    color: #666;
+    color: #cccccc;
 }
 
 .auction-item .tier {
     font-weight: bold;
-    color: #ff9800;
 }
+
+.tier-common { color: #ffffff; }
+.tier-uncommon { color: #55ff55; }
+.tier-rare { color: #5555ff; }
+.tier-epic { color: #aa00aa; }
+.tier-legendary { color: #ffaa00; }
+.tier-mythic { color: #ff5555; }
+.tier-special { color: #ff55ff; }
+.tier-unknown { color: #ff0000; }
 
 .auction-item .price {
     font-weight: bold;
@@ -135,18 +145,42 @@ button:hover {
 }
 
 .auction-item .category {
-    background: #f0f0f0;
+    background: #555;
     padding: 2px 6px;
     border-radius: 3px;
     font-size: 12px;
     text-transform: uppercase;
 }
 
-.bin-badge {
-    background: #2196F3;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 12px;
+.auction-item .buyer {
+    color: #ffeb3b;
     font-weight: bold;
+    cursor: pointer;
+}
+
+.auction-item .buyer:hover {
+    text-decoration: underline;
+}
+
+.stats-corner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(50, 50, 50, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    color: #e0e0e0;
+    font-size: 14px;
+    z-index: 1000;
+}
+
+.stats-corner h3 {
+    margin: 0 0 10px 0;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.stats-corner p {
+    margin: 5px 0;
 }
