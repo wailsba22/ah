@@ -1,5 +1,37 @@
-document.addEventListener('DOMContentLoaded', loadStoredData);
+document.addEventListener('DOMContentLoaded', function() {
+    loadStoredData();
+    setupViewButtons();
+});
 document.getElementById('fetchBtn').addEventListener('click', fetchAuctions);
+
+function setupViewButtons() {
+    document.getElementById('showAuctions').addEventListener('click', () => switchView('auctions'));
+    document.getElementById('showBids').addEventListener('click', () => switchView('bids'));
+    switchView('auctions'); // Default view
+}
+
+function switchView(view) {
+    const activeSection = document.querySelector('h2:nth-of-type(1)').nextElementSibling;
+    const soldSection = document.querySelector('h2:nth-of-type(2)').nextElementSibling;
+    const btnAuctions = document.getElementById('showAuctions');
+    const btnBids = document.getElementById('showBids');
+
+    if (view === 'auctions') {
+        activeSection.style.display = 'block';
+        document.querySelector('h2:nth-of-type(1)').style.display = 'block';
+        soldSection.style.display = 'none';
+        document.querySelector('h2:nth-of-type(2)').style.display = 'none';
+        btnAuctions.classList.add('active');
+        btnBids.classList.remove('active');
+    } else {
+        activeSection.style.display = 'none';
+        document.querySelector('h2:nth-of-type(1)').style.display = 'none';
+        soldSection.style.display = 'block';
+        document.querySelector('h2:nth-of-type(2)').style.display = 'block';
+        btnAuctions.classList.remove('active');
+        btnBids.classList.add('active');
+    }
+}
 
 function loadStoredData() {
     const username = localStorage.getItem('hypixelUsername');

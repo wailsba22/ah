@@ -82,6 +82,33 @@ button:hover {
     border-left: 5px solid #c62828;
 }
 
+.view-buttons {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.view-btn {
+    padding: 10px 20px;
+    margin: 0 10px;
+    background: #333;
+    color: #e0e0e0;
+    border: 2px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Minecraft', monospace;
+    transition: background 0.3s;
+}
+
+.view-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.view-btn:hover {
+    background: #555;
+}
+
 .auctions-section h2 {
     color: #ffffff;
     text-align: center;
