@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Texture Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: rgba(50, 50, 50, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #555;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .test-item {
+            text-align: center;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+        .test-item img {
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .test-item p {
+            font-size: 10px;
+            word-wrap: break-word;
+            margin: 5px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+        }
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+        .status.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196F3;
+            color: #2196F3;
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 SkyBlock Item Texture Test</h1>
+
+    <div class="test-section">
+        <h2>System Status</h2>
+        <div id="systemStatus">Checking...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Sample Items (Random Selection)</h2>
+        <div id="sampleStatus">Loading...</div>
+        <button onclick="loadSampleItems()">🔄 Reload Sample</button>
+        <div class="test-grid" id="sampleGrid"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Common Items Test</h2>
+        <div id="commonStatus">Loading...</div>
+        <div class="test-grid" id="commonGrid"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Manual Test</h2>
+        <input type="text" id="manualInput" placeholder="Enter item name (e.g., HYPERION)" style="padding: 10px; width: 300px; background: #333; color: white; border: 2px solid #555; border-radius: 5px;">
+        <button onclick="testManualItem()">Test Item</button>
+        <div class="test-grid" id="manualGrid"></div>
+    </div>
+
+    <script src="itemTextureIndex.js"></script>
+    <script src="itemTexturesStatic.js"></script>
+    <script>
+        let itemList = [];
+
+        async function checkSystem() {
+            const statusDiv = document.getElementById('systemStatus');
+            let html = '';
+
+            // Check if static manager loaded
+            if (window.staticItemManager) {
+                html += '<div class="status success">✓ Static Item Manager loaded</div>';
+            } else {
+                html += '<div class="status error">✗ Static Item Manager not loaded</div>';
+                statusDiv.innerHTML = html;
+                return;
+            }
+
+            // Check if itemList.json exists
+            try {
+                const items = await window.staticItemManager.getAllItems();
+                if (items.length > 0) {
+                    itemList = items;
+                    html += `<div class="status success">✓ Loaded ${items.length} items from itemList.json</div>`;
+                } else {
+                    html += '<div class="status error">✗ itemList.json is empty</div>';
+                }
+            } catch (e) {
+                html += '<div class="status error">✗ Failed to load itemList.json</div>';
+            }
+
+            // Check resource pack path
+            html += `<div class="status info">📁 Texture Path: ${window.staticItemManager.basePath}</div>`;
+
+            statusDiv.innerHTML = html;
+        }
+
+        async function loadSampleItems() {
+            const grid = document.getElementById('sampleGrid');
+            const status = document.getElementById('sampleStatus');
+            grid.innerHTML = '';
+
+            if (itemList.length === 0) {
+                status.innerHTML = '<div class="status error">No items loaded</div>';
+                return;
+            }
+
+            // Get 20 random items
+            const randomItems = [];
+            for (let i = 0; i < 20; i++) {
+                const randomIndex = Math.floor(Math.random() * itemList.length);
+                randomItems.push(itemList[randomIndex].name);
+            }
+
+            status.innerHTML = `<div class="status info">Testing ${randomItems.length} random items...</div>`;
+
+            randomItems.forEach(itemName => {
+                addTestItem(grid, itemName);
+            });
+        }
+
+        async function loadCommonItems() {
+            const grid = document.getElementById('commonGrid');
+            const status = document.getElementById('commonStatus');
+            grid.innerHTML = '';
+
+            const commonItems = [
+                'ASPECT_OF_THE_DRAGONS',
+                'HYPERION',
+                'NECRON_HELMET',
+                'WARDEN_HELMET',
+                'MAGMA_BOW',
+                'ROGUE_SWORD',
+                'DIAMOND_SWORD',
+                'ENCHANTED_BOOK',
+                'BLOCK_ZAPPER',
+                'BOOSTER_COOKIE'
+            ];
+
+            status.innerHTML = `<div class="status info">Testing ${commonItems.length} common items...</div>`;
+
+            commonItems.forEach(itemName => {
+                addTestItem(grid, itemName);
+            });
+        }
+
+        function testManualItem() {
+            const input = document.getElementById('manualInput');
+            const grid = document.getElementById('manualGrid');
+            const itemName = input.value.trim().toUpperCase();
+
+            if (!itemName) return;
+
+            grid.innerHTML = '';
+            addTestItem(grid, itemName);
+        }
+
+        function addTestItem(grid, itemName) {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test-item';
+
+            const img = window.getStaticItemTexture(itemName, 64);
+            const nameP = document.createElement('p');
+            nameP.textContent = itemName.replace(/_/g, ' ');
+            
+            const statusP = document.createElement('p');
+            statusP.style.color = '#999';
+            statusP.textContent = 'Loading...';
+
+            img.onload = () => {
+                statusP.style.color = '#4CAF50';
+                statusP.textContent = '✓ Loaded';
+            };
+
+            img.onerror = () => {
+                statusP.style.color = '#f44336';
+                statusP.textContent = '✗ Failed';
+            };
+
+            testDiv.appendChild(img);
+            testDiv.appendChild(nameP);
+            testDiv.appendChild(statusP);
+            grid.appendChild(testDiv);
+        }
+
+        // Run tests on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkSystem();
+            await loadCommonItems();
+            await loadSampleItems();
+        });
+    </script>
+</body>
+</html>

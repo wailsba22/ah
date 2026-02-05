@@ -87,19 +87,6 @@ button:hover {
     margin: 20px 0;
 }
 
-.view-btn {
-    padding: 10px 20px;
-    margin: 0 10px;
-    background: #333;
-    color: #e0e0e0;
-    border: 2px solid #555;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-family: 'Minecraft', monospace;
-    transition: background 0.3s;
-}
-
 .view-btn.active {
     background: #667eea;
     border-color: #667eea;
@@ -107,6 +94,23 @@ button:hover {
 
 .view-btn:hover {
     background: #555;
+}
+
+.search-section {
+    text-align: center;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-section input {
+    width: 300px;
+}
+
+.search-section button {
+    padding: 10px 20px;
 }
 
 .auctions-section h2 {
@@ -118,18 +122,19 @@ button:hover {
 
 .auctions-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
     margin-bottom: 40px;
 }
 
 .auction-item {
     background: #333;
     border-radius: 10px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     transition: transform 0.3s, box-shadow 0.3s;
     border: 1px solid #555;
+    position: relative;
 }
 
 .auction-item:hover {
@@ -140,12 +145,35 @@ button:hover {
 .auction-item h3 {
     margin-top: 0;
     color: #ffffff;
-    font-size: 18px;
+    font-size: 14px;
+    line-height: 1.2;
 }
 
 .auction-item p {
-    margin: 8px 0;
+    margin: 4px 0;
     color: #cccccc;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.buy-sell-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.buy-sell-badge.buy {
+    background: green;
+}
+
+.buy-sell-badge.sell {
+    background: red;
 }
 
 .auction-item .tier {
@@ -210,4 +238,59 @@ button:hover {
 
 .stats-corner p {
     margin: 5px 0;
+}
+
+/* Item Texture Styles */
+.item-texture {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    vertical-align: middle;
+}
+
+.item-animation-wrapper {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.auction-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.auction-item > div {
+    flex: 1;
+}
+
+.bin-badge {
+    background: linear-gradient(45deg, #00bcd4, #2196f3);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 8px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Minecraft-style tooltip (optional enhancement) */
+.item-texture:hover {
+    filter: brightness(1.2);
+    transition: filter 0.2s;
+}
+
+/* Loading state for textures */
+.item-texture[src=""] {
+    background: linear-gradient(45deg, #555 25%, #666 25%, #666 50%, #555 50%, #555 75%, #666 75%, #666);
+    background-size: 8px 8px;
+    animation: loading-pattern 0.5s linear infinite;
+}
+
+@keyframes loading-pattern {
+    0% { background-position: 0 0; }
+    100% { background-position: 8px 8px; }
 }
