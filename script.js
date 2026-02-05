@@ -11,23 +11,14 @@ function setupViewButtons() {
 }
 
 function switchView(view) {
-    const activeSection = document.querySelector('h2:nth-of-type(1)').nextElementSibling;
-    const soldSection = document.querySelector('h2:nth-of-type(2)').nextElementSibling;
+    // Just change active button, but show both sections always
     const btnAuctions = document.getElementById('showAuctions');
     const btnBids = document.getElementById('showBids');
 
     if (view === 'auctions') {
-        activeSection.style.display = 'block';
-        document.querySelector('h2:nth-of-type(1)').style.display = 'block';
-        soldSection.style.display = 'none';
-        document.querySelector('h2:nth-of-type(2)').style.display = 'none';
         btnAuctions.classList.add('active');
         btnBids.classList.remove('active');
     } else {
-        activeSection.style.display = 'none';
-        document.querySelector('h2:nth-of-type(1)').style.display = 'none';
-        soldSection.style.display = 'block';
-        document.querySelector('h2:nth-of-type(2)').style.display = 'block';
         btnAuctions.classList.remove('active');
         btnBids.classList.add('active');
     }
@@ -107,39 +98,53 @@ async function fetchAuctions() {
         const auctions = auctionsData.auctions;
         const now = Date.now();
 
-        const active = [];
-        const sold = [];
+        const activeAuctions = [];
+        const activeBINs = [];
+        const soldAuctions = [];
+        const soldBINs = [];
 
         auctions.forEach(auction => {
             const endTime = auction.end;
             const isActive = endTime > now;
             const hasBids = auction.bids && auction.bids.length > 0;
+            const isBin = auction.bin;
 
             if (isActive) {
-                active.push(auction);
+                if (isBin) {
+                    activeBINs.push(auction);
+                } else {
+                    activeAuctions.push(auction);
+                }
             } else if (hasBids) {
-                sold.push(auction);
+                if (isBin) {
+                    soldBINs.push(auction);
+                } else {
+                    soldAuctions.push(auction);
+                }
             }
         });
 
         // Sort active by end time ascending (ending soonest first)
-        active.sort((a, b) => a.end - b.end);
+        activeAuctions.sort((a, b) => a.end - b.end);
+        activeBINs.sort((a, b) => a.end - b.end);
 
         // Sort sold by end time ascending (oldest first)
-        sold.sort((a, b) => a.end - b.end);
+        soldAuctions.sort((a, b) => a.end - b.end);
+        soldBINs.sort((a, b) => a.end - b.end);
 
         // Calculate stats
-        const activeCount = active.length;
-        const soldCount = sold.length;
-        const totalSoldValue = sold.reduce((sum, auction) => sum + (auction.highest_bid_amount || 0), 0);
+        const activeCount = activeAuctions.length + activeBINs.length;
+        const soldCount = soldAuctions.length + soldBINs.length;
+        const totalSoldValue = [...soldAuctions, ...soldBINs].reduce((sum, auction) => sum + (auction.highest_bid_amount || 0), 0);
 
-        const data = { active, sold, activeCount, soldCount, totalSoldValue };
+        const data = { activeAuctions, activeBINs, soldAuctions, soldBINs, activeCount, soldCount, totalSoldValue };
 
         // Save to localStorage
         localStorage.setItem(`auctions_${username}`, JSON.stringify(data));
 
         // Get buyer names
-        const buyerUUIDs = [...new Set(sold.map(a => a.bids && a.bids.length > 0 ? a.bids.reduce((prev, current) => (prev.amount > current.amount) ? prev : current).bidder : null).filter(Boolean))];
+        const allSold = [...soldAuctions, ...soldBINs];
+        const buyerUUIDs = [...new Set(allSold.map(a => a.bids && a.bids.length > 0 ? a.bids.reduce((prev, current) => (prev.amount > current.amount) ? prev : current).bidder : null).filter(Boolean))];
         const buyerNames = {};
         for (const uuid of buyerUUIDs) {
             const cachedName = localStorage.getItem(`name_${uuid}`);
@@ -170,15 +175,16 @@ async function fetchAuctions() {
         document.getElementById('viewing').textContent = `Viewing: ${isViewingOwn ? 'Your Auctions' : username + "'s Auctions"}`;
         document.getElementById('backBtn').style.display = isViewingOwn ? 'none' : 'block';
 
-        // Pass buyerNames to display
-        displayAuctions(active, activeDiv, 'active', {});
-        displayAuctions(sold, soldDiv, 'sold', buyerNames);
+        // Display based on current view
+        updateDisplay(buyerNames);
 
     } catch (error) {
         // If fetch fails and we have cached data, show it
         if (cachedData) {
             showError(`Failed to fetch fresh data: ${error.message}. Showing cached data.`);
-            displayCachedData(cachedData);
+            // Set cached data and update display
+            localStorage.setItem(`auctions_${username}`, JSON.stringify(cachedData));
+            updateDisplay({});
         } else {
             showError(error.message);
         }
@@ -187,21 +193,27 @@ async function fetchAuctions() {
     }
 }
 
-function displayCachedData(data) {
-    const { active, sold, activeCount, soldCount, totalSoldValue } = data;
-    const username = document.getElementById('username').value.trim();
-    const originalUsername = localStorage.getItem('originalUsername');
-    const isViewingOwn = !originalUsername || username === originalUsername;
+function updateDisplay(buyerNames) {
+    const activeDiv = document.getElementById('activeAuctions');
+    const soldDiv = document.getElementById('soldAuctions');
+    const data = JSON.parse(localStorage.getItem(`auctions_${document.getElementById('username').value}`) || '{}');
 
-    document.getElementById('stats').style.display = 'block';
-    document.getElementById('activeCount').textContent = `Active: ${activeCount}`;
-    document.getElementById('soldCount').textContent = `Sold: ${soldCount}`;
-    document.getElementById('totalSoldValue').textContent = `Total Sold: ${formatCoins(totalSoldValue)} coins`;
-    document.getElementById('viewing').textContent = `Viewing: ${isViewingOwn ? 'Your Auctions' : username + "'s Auctions"}`;
-    document.getElementById('backBtn').style.display = isViewingOwn ? 'none' : 'block';
+    if (!data.activeAuctions) return; // No data
 
-    displayAuctions(active, document.getElementById('activeAuctions'), 'active');
-    displayAuctions(sold, document.getElementById('soldAuctions'), 'sold');
+    const { activeAuctions, activeBINs, soldAuctions, soldBINs } = data;
+
+    // Determine what to show based on active button
+    const showAuctions = document.getElementById('showAuctions').classList.contains('active');
+
+    if (showAuctions) {
+        // Show auctions: active and sold non-BIN
+        displayAuctions([...activeAuctions, ...soldAuctions], activeDiv, 'auctions', buyerNames);
+        soldDiv.innerHTML = '';
+    } else {
+        // Show BINs: active and sold BIN
+        displayAuctions([...activeBINs, ...soldBINs], soldDiv, 'bins', buyerNames);
+        activeDiv.innerHTML = '';
+    }
 }
 
 function displayAuctions(auctions, container, type, buyerNames = {}) {
